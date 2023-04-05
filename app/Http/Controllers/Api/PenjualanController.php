@@ -56,27 +56,29 @@ class PenjualanController extends Controller
             ], 400);
         }
 
+        if ($data->qty > $request->qty) {
+            $total = $data->qty - $request->qty;
+            // 20 - 10 = 10
+            // 20 - 30 = 30
+            $barang->update([
+                'stock' => $barang->stock + $total
+            ]);
+        }
+
+        if ($data->qty < $request->qty) {
+            $total = $data->qty - $request->qty;
+
+            $barang->update([
+                'stock' => $barang->stock + $total
+            ]);
+        }
+        $barang->save();
+
         DB::beginTransaction();
         try {
             $data->update([
                 'qty' => $request->qty
             ]);
-
-            if ($request->qty > $data->qty) {
-                # code...
-                $total = $request->qty - $data->qty;
-                $barang->stock = ($request->qty + $barang->stock) - ($total);
-            }
-
-            if ($request->qty < $data->qty) {
-                # code...
-                $total = $data->qty - $request->qty;
-                $barang->stock = ($request->qty + $barang->stock) + ($total);
-            }
-
-            $barang->save();
-
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -87,6 +89,8 @@ class PenjualanController extends Controller
             'message' => 'Berhasil update data!'
         ], 200);
     }
+
+
 
     public function publish($id)
     {
